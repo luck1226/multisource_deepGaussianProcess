@@ -56,12 +56,10 @@ class MFRBF(Kern):
         m_eff = np.zeros((len(self.mu),len(self.mu)))
 
         for i in range(len(self.mu)):
-
             for j in range(len(self.mu)):
 
                 if i == j:
                     m_eff[i,j] = 0.
-
                 else:
                     if m_eff[j,i] == 0:
                         d_mu = self.mu[i]-self.mu[j]
@@ -184,3 +182,4 @@ class MFCosine(Kern):
         pass
 
 
+minor update
