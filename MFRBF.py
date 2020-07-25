@@ -25,7 +25,7 @@ class MFRBF(Kern):
             for j in range(len(self.mu)):
 
                 if i == j:
-                    m_eff[i,j] = self.variance
+                    m_eff[i,j] = self.variance**2
 
                 else:
                     if m_eff[j,i] == 0:
@@ -36,30 +36,33 @@ class MFRBF(Kern):
                         tmp_1 = 1 + (k_ii+k_jj-2*k_ij)/self.lengthscale**2
                         tmp_exp = np.exp((-1.)*d_mu**2/2/self.lengthscale**2/tmp_1)
                         tmp_sqrt = tmp_1**(-1/2)
-                        m_eff[i,j] = self.variance * tmp_exp * tmp_sqrt
+                        m_eff[i,j] = self.variance**2 * tmp_exp * tmp_sqrt
                     else:
                         m_eff[i,j] = m_eff[j,i]
 
-        return m_eff+0.0001*np.eye(m_eff.shape[0])
+        return m_eff
+	#return m_eff
 
     def Kdiag(self,X):
-        return self.variance*np.ones(len(mu))
+        return self.variance**2*np.ones(len(mu))
 
     def update_gradients_full(self, dL_dK, X, X2):
         if X2 is None: X2 = X
 
         k = self.K(X)
 
-        dvar = k/self.variance
+        dvar = 2.*k/self.variance
 
         # Calculate the gradient component with respect to lengthscale
         m_eff = np.zeros((len(self.mu),len(self.mu)))
 
         for i in range(len(self.mu)):
+
             for j in range(len(self.mu)):
 
                 if i == j:
                     m_eff[i,j] = 0.
+
                 else:
                     if m_eff[j,i] == 0:
                         d_mu = self.mu[i]-self.mu[j]
@@ -114,7 +117,7 @@ class MFCosine(Kern):
         for i in range(len(self.mu)):
             for j in range(len(self.mu)):
                 if i == j:
-                    m_eff[i,j] = self.variance
+                    m_eff[i,j] = self.variance**2
 
                 else:
                     if m_eff[j,i] == 0:
@@ -125,20 +128,21 @@ class MFCosine(Kern):
                         tmp_1 = (k_ii+k_jj-2*k_ij)/2/self.lengthscale**2
                         tmp_exp = np.exp((-1.)*tmp_1)
                         tmp_cosine = np.cos(d_mu/self.lengthscale)
-                        m_eff[i,j] = 0.5*self.variance*(1+tmp_exp*tmp_cosine)
+                        m_eff[i,j] = 0.5*self.variance**2*(1+tmp_exp*tmp_cosine)
                     else:
                         m_eff[i,j] = m_eff[j,i]
 
-        return m_eff+0.0001*np.eye(m_eff.shape[0])
+        return m_eff
+	#return m_eff
 
     def Kdiag(self,X):
-        return self.variance*np.ones(len(mu))
+        return self.variance**2*np.ones(len(mu))
 
     def update_gradients_full(self, dL_dK, X, X2):
         if X2 is None: X2 = X
 
         k = self.K(X)
-        dvar = k/self.variance
+        dvar = 2.*k/self.variance
 
         # Calculate the gradient component with respect to lengthscale
         m_eff = np.zeros((len(self.mu),len(self.mu)))
@@ -159,7 +163,7 @@ class MFCosine(Kern):
                         tmp1 = tmp/self.lengthscale**3
                         tmp2 = d_mu/self.lengthscale**2
                         tmp3 = np.sin(d_mu/self.lengthscale)*tmp2 + np.cos(d_mu/self.lengthscale)*tmp1
-                        m_eff[i,j] = 0.5*self.variance*np.exp(tmp/2/self.lengthscale**2)*tmp3
+                        m_eff[i,j] = 0.5*self.variance**2*np.exp(tmp/2/self.lengthscale**2)*tmp3
                     else:
                         m_eff[i,j] = m_eff[j,i]
 
@@ -182,4 +186,3 @@ class MFCosine(Kern):
         pass
 
 
-minor update
