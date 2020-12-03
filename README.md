@@ -1,4 +1,4 @@
-# deepGaussianProcess
+# Deep Moment Matching Kernel for multi-source Gaussian Process
 Moment-matching approximation of deep GP 
 
 Implementation of Deep Moment Matching Kernel for Multi-source Gaussian Process
