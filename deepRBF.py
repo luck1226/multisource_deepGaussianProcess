@@ -20,22 +20,22 @@ class deepRBF(Kern):
         if X2 is None: X2 = X
         dist2 = (np.square(X[:,np.newaxis]-X2).sum(axis=2))/self.lengthscale**2
         tmp1 = 1.-np.exp((-1.)*dist2/2.)
-        tmp2 = 2.*self.variance1*tmp1
-        return self.variance2*np.power(1 + tmp2,-0.5)
+        tmp2 = 2.*self.variance1**2*tmp1
+        return self.variance2**2*np.power(1 + tmp2,-0.5)
 
     def Kdiag(self,X):
-        return self.variance2*np.ones(X.shape[0])
+        return self.variance2**2*np.ones(X.shape[0])
 
     def update_gradients_full(self, dL_dK, X, X2):
         if X2 is None: X2 = X
 
         dist2 = (np.square(X[:,np.newaxis]-X2).sum(axis=2))/self.lengthscale**2
         tmp1 = 1.-np.exp((-1.)*dist2/2.)
-        tmp2 = 2.*self.variance1*tmp1
+        tmp2 = 2.*self.variance1**2*tmp1
 
-        dvar2 = np.power(1 + tmp2, -0.5)
-        dvar1 = (-1.)*self.variance2*tmp1*np.power(1+tmp2,-1.5)
-        dl = self.variance1*self.variance2*np.exp((-1.)*dist2)*dist2/self.lengthscale*np.power(1+tmp2,-1.5)
+        dvar2 = 2.*self.variance2*np.power(1 + tmp2, -0.5)
+        dvar1 = (-2.)*self.variance2**2*self.variance1*tmp1*np.power(1+tmp2,-1.5)
+        dl = self.variance1**2*self.variance2**2*np.exp((-1.)*dist2)*dist2/self.lengthscale*np.power(1+tmp2,-1.5)
 
         self.variance1.gradient = np.sum(dvar1*dL_dK)
         self.lengthscale.gradient = np.sum(dl*dL_dK)
@@ -49,10 +49,10 @@ class deepRBF(Kern):
         if X2 is None: X2 = X
         dist2 = (np.square(X[:,np.newaxis]-X2).sum(axis=2))/self.lengthscale**2
         tmp1 = 1.-np.exp((-1.)*dist2/2.)
-        tmp2 = 2.*self.variance1*tmp1
+        tmp2 = 2.*self.variance1**2*tmp1
         tmp3 = np.power(1+tmp2,-1.5)
 
-        dX_tmp = (-1.)*self.variance1*self.variance2/self.lengthscale**2 * np.exp((-1.)*dist2/2) * tmp3
+        dX_tmp = (-1.)*self.variance1**2*self.variance2**2/self.lengthscale**2 * np.exp((-1.)*dist2/2) * tmp3
         return ((dL_dK*dX_tmp)[:,:,None]*(X[:,None,:] - X2[None,:,:])).sum(1)
 
     def gradients_X_diag(self,dL_dKdiag,X):
@@ -79,11 +79,11 @@ class deepCosine(Kern):
         if X2 is None: X2 = X
         dist2 = (np.square(X[:,np.newaxis]-X2).sum(axis=2))/self.lengthscale**2
         tmp1 = np.exp((-1.)*dist2/2.)-1.
-        tmp2 = self.variance1*tmp1
-        return 0.5*self.variance2*(1+np.exp(tmp2))
+        tmp2 = self.variance1**2*tmp1
+        return 0.5*self.variance2**2*(1+np.exp(tmp2))
 
     def Kdiag(self,X):
-        return self.variance2*np.ones(X.shape[0])
+        return self.variance2**2*np.ones(X.shape[0])
 
 
     def update_gradients_full(self, dL_dK, X, X2):
@@ -91,14 +91,14 @@ class deepCosine(Kern):
 
         dist2 = (np.square(X[:,np.newaxis]-X2).sum(axis=2))/self.lengthscale**2
         tmp1 = np.exp((-1.)*dist2/2.)-1.
-        tmp2 = self.variance1*tmp1
+        tmp2 = self.variance1**2*tmp1
         tmp3 = np.exp(tmp2)
 
-        dvar2 = 0.5*(1+np.exp(tmp2))
+        dvar2 = self.variance2*(1+np.exp(tmp2))
         #dvar1 = (-1.)*self.variance2*tmp1*np.power(1+tmp2,-1.5)
-        dvar1 = 0.5*self.variance2*tmp3*tmp1
+        dvar1 = self.variance2**2*self.variance1*tmp3*tmp1
         #dl = self.variance1*self.variance2*np.exp((-1.)*dist2)*dist2/self.lengthscale*np.power(1+tmp2,-1.5)
-        dl = self.variance1*self.variance2*tmp3*(tmp1+1)*dist2/self.lengthscale
+        dl = self.variance1**2*self.variance2**2*tmp3*(tmp1+1)*dist2/self.lengthscale
 
         self.variance1.gradient = np.sum(dvar1*dL_dK)
         self.lengthscale.gradient = np.sum(dl*dL_dK)
